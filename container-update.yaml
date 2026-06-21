@@ -1,0 +1,46 @@
+properties:
+  configuration:
+    ingress:
+      external: true
+      targetPort: 5001
+      transport: auto
+      timeoutInSeconds: 600
+    activeRevisionsMode: Single
+  template:
+    scale:
+      minReplicas: 1
+      maxReplicas: 3
+    volumes:
+      - name: corpusdb
+        storageName: corpusdb
+        storageType: AzureFile
+    containers:
+      - name: greek-corpus-workbench
+        image: greekappheaven.azurecr.io/greek-corpus-workbench:latest
+        resources:
+          cpu: 2
+          memory: 4Gi
+        env:
+          - name: DB_PATH
+            value: /data/corpus.db
+          - name: LITERATURE_DB_PATH
+            value: /data/literature.db
+          - name: DIALECTAL_DB_PATH
+            value: /data/dialectal.db
+        volumeMounts:
+          - volumeName: corpusdb
+            mountPath: /data
+        probes:
+          - type: startup
+            tcpSocket:
+              port: 5001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 60
+            timeoutSeconds: 5
+          - type: liveness
+            tcpSocket:
+              port: 5001
+            periodSeconds: 60
+            failureThreshold: 3
+            timeoutSeconds: 5

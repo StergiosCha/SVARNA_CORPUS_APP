@@ -1,0 +1,6 @@
+corpus.db
+*.db
+corpora/
+__pycache__/
+*.pyc
+.git/
